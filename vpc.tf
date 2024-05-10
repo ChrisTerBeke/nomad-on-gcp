@@ -1,11 +1,3 @@
-resource "google_compute_address" "nomad_master" {
-  name         = "nomad-master-ip"
-  address_type = "INTERNAL"
-  project      = var.project
-  region       = var.region
-  subnetwork   = google_compute_subnetwork.nomad.id
-}
-
 resource "google_compute_network" "nomad" {
   name                            = "nomad"
   project                         = var.project
