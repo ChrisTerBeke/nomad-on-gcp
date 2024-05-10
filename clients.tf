@@ -1,5 +1,6 @@
 resource "google_compute_instance_template" "nomad_client" {
   name                 = "nomad-client"
+  project              = var.project
   instance_description = "Nomad client"
   machine_type         = var.machine_type
   region               = var.region
@@ -11,19 +12,18 @@ resource "google_compute_instance_template" "nomad_client" {
     block-project-ssh-keys = true
     user-data = templatefile("${path.module}/cloud_init.yaml", {
       nomad_version = var.nomad_version
-      nomad_config = templatefile("${path.module}/etc/nomad.d/nomad.hcl", {
+      nomad_config = templatefile("${path.module}/overlay/etc/nomad.d/nomad.hcl", {
         nomad_server       = false
         nomad_client       = true
         nomad_datacenter   = var.nomad_datacenter
         nomad_server_count = var.nomad_server_count
       })
-      nomad_systemd_service = templatefile("${path.module}/etc/systemd/system/nomad.service", {
+      nomad_systemd_service = templatefile("${path.module}/overlay/etc/systemd/system/nomad.service", {
         nomad_server = false
         nomad_client = true
       })
-      init_script = templatefile("${path.module}/init.sh", {
-        nomad_server = false
-        nomad_client = true
+      init_script = templatefile("${path.module}/overlay/opt/init/init.sh", {
+        nomad_version = var.nomad_version
       })
     })
   }
@@ -53,6 +53,8 @@ resource "google_compute_instance_template" "nomad_client" {
 
 resource "google_compute_instance_group_manager" "nomad_clients" {
   name               = "nomad-clients"
+  project            = var.project
+  zone               = "${var.region}-a" # TODO: support multiple zones
   base_instance_name = "nomad-client"
   target_size        = var.nomad_client_count
 
