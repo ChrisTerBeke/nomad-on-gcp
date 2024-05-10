@@ -1,4 +1,4 @@
-resource "google_compute_instance_template" "server" {
+resource "google_compute_instance_template" "nomad_server" {
   name         = "nomad-server"
   machine_type = var.machine_type
 
@@ -28,19 +28,23 @@ resource "google_compute_instance_template" "server" {
   disk {
     source_image = var.base_image
   }
+
+  network_interface {
+    subnetwork = google_compute_subnetwork.nomad.id
+  }
 }
 
-resource "google_compute_instance_group_manager" "servers" {
+resource "google_compute_instance_group_manager" "nomad_servers" {
   name               = "nomad-servers"
   base_instance_name = "nomad-server"
   target_size        = var.nomad_server_count
 
   version {
-    instance_template = google_compute_instance_template.server.self_link
+    instance_template = google_compute_instance_template.nomad_server.self_link
   }
 }
 
-resource "google_compute_instance_template" "client" {
+resource "google_compute_instance_template" "nomad_client" {
   name         = "nomad-client"
   machine_type = var.machine_type
 
@@ -70,14 +74,18 @@ resource "google_compute_instance_template" "client" {
   disk {
     source_image = var.base_image
   }
+
+  network_interface {
+    subnetwork = google_compute_subnetwork.nomad.id
+  }
 }
 
-resource "google_compute_instance_group_manager" "clients" {
+resource "google_compute_instance_group_manager" "nomad_clients" {
   name               = "nomad-clients"
   base_instance_name = "nomad-client"
   target_size        = var.nomad_client_count
 
   version {
-    instance_template = google_compute_instance_template.client.self_link
+    instance_template = google_compute_instance_template.nomad_client.self_link
   }
 }
