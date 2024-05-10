@@ -18,7 +18,7 @@ resource "google_compute_instance_template" "server" {
         nomad_server = true
         nomad_client = false
       })
-      init_script = templatefile("${path.module}/init.sh", {
+      init_script = templatefile("${path.module}/overlay/opt/init/init.sh", {
         nomad_server = true
         nomad_client = false
       })
