@@ -18,46 +18,11 @@ write_files:
     owner: nomad:nomad
     permissions: 0o600
     defer: true
-    content: |
-      datacenter="${nomad_datacenter}"
-      data_dir="/var/lib/nomad"
-      client { 
-       enabled = ${nomad_server?"false":"true"}
-        server_join {
-          retry_join = ["${join}"]
-        }
-        options { 
-          docker.privileged.enabled = true 
-          driver.aw_exec.enable = true
-        }
-      }
-      server {
-        enabled = ${nomad_client?"false":"true"}
-        bootstrap_expect = ${nomad_server_count}
-      }
+    content: ${nomad_config}
   - path: /etc/systemd/system/nomad.service
-    content: |
-      [Unit]
-      Description=Nomad
-      Documentation=https://nomadproject.io/docs/
-
-      [Service]
-      KillMode=process
-      KillSignal=SIGINT
-      ExecStart=/usr/local/bin/nomad agent --config /etc/nomad.d/ -${server?"server":"client"}
-      ExecReload=/bin/kill -HUP $MAINPID
-      LimitNOFILE=65536
-      Restart=always
-
-      [Install]
-      WantedBy=multi-user.target
+    content: ${nomad_systemd_service}
+  - path: /opt/init/init.sh
+    content: ${init_script}
 
 runcmd:
-  - mkdir -p /opt/init
-  - curl https://releases.hashicorp.com/nomad/${nomad_version}/nomad_${nomad_version}_linux_amd64.zip -o /opt/init/nomad.zip
-  - unzip /opt/init/nomad.zip -d /opt/init/
-  - cp /opt/init/nomad /usr/local/bin/nomad
-  - chmod +x /usr/local/bin/nomad
-  - systemctl daemon-reload
-  - systemctl enable nomad
-  - systemctl start nomad
+  - /opt/init/init.sh

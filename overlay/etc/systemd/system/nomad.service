@@ -1,0 +1,14 @@
+[Unit]
+Description=Nomad
+Documentation=https://nomadproject.io/docs/
+
+[Service]
+KillMode=process
+KillSignal=SIGINT
+ExecStart=/usr/local/bin/nomad agent --config /etc/nomad.d/ ${ server ? "-server" } ${ client ? "-client" }
+ExecReload=/bin/kill -HUP $MAINPID
+LimitNOFILE=65536
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
