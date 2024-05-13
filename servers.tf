@@ -71,6 +71,23 @@ resource "google_compute_instance_group_manager" "nomad_servers" {
   }
 }
 
+resource "google_compute_region_autoscaler" "nomad_servers" {
+  provider = google-beta
+  name   = "nomad-servers-autoscaler"
+  region = local.zone
+  target = google_compute_instance_group_manager.nomad_servers.id
+
+  autoscaling_policy {
+    max_replicas    = 6
+    min_replicas    = 3
+    cooldown_period = 60
+
+    cpu_utilization {
+      target = 0.75
+    }
+  }
+}
+
 resource "google_compute_health_check" "nomad_servers" {
   name                = "nomad-servers-health-check"
   project             = var.project
