@@ -96,6 +96,32 @@ resource "google_compute_firewall" "allow_internal_ingress" {
   }
 }
 
+resource "google_compute_firewall" "allow_internal_egress" {
+  name      = "allow-internal-egress"
+  project   = var.project
+  network   = google_compute_network.default.name
+  direction = "EGRESS"
+
+  source_ranges = [
+    google_compute_subnetwork.default.ip_cidr_range,
+    google_compute_subnetwork.load_balancer_proxy.ip_cidr_range,
+  ]
+
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "tcp"
+    ports    = ["0-65535"]
+  }
+
+  allow {
+    protocol = "udp"
+    ports    = ["0-65535"]
+  }
+}
+
 # Allow incoming TCP traffic from Identity-Aware Proxy (IAP)
 resource "google_compute_firewall" "allow_iap_tcp_ingress" {
   name          = "allow-iap-tcp-ingress"
