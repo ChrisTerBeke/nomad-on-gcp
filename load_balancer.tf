@@ -30,6 +30,11 @@ resource "google_compute_backend_service" "nomad_ui" {
     balancing_mode  = "UTILIZATION"
     capacity_scaler = 1.0
   }
+
+  iap {
+    oauth2_client_id     = var.iap_client_id
+    oauth2_client_secret = var.iap_client_secret
+  }
 }
 
 resource "google_compute_url_map" "nomad_ui" {
@@ -38,10 +43,20 @@ resource "google_compute_url_map" "nomad_ui" {
   default_service = google_compute_backend_service.nomad_ui.id
 }
 
-resource "google_compute_target_https_proxy" "nomad_ui" {
-  name    = "nomad-ui"
+resource "google_compute_managed_ssl_certificate" "nomad_ui" {
+  name    = "nomad-christerbeke-com"
   project = var.project
-  url_map = google_compute_url_map.nomad_ui.id
+
+  managed {
+    domains = ["nomad.christerbeke.com"]
+  }
+}
+
+resource "google_compute_target_https_proxy" "nomad_ui" {
+  name             = "nomad-ui"
+  project          = var.project
+  url_map          = google_compute_url_map.nomad_ui.id
+  ssl_certificates = [google_compute_managed_ssl_certificate.nomad_ui.id]
 }
 
 resource "google_compute_global_forwarding_rule" "nomad_ui" {

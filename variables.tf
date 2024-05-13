@@ -50,3 +50,15 @@ variable "nomad_client_count" {
   description = "Number of Nomad client nodes to create"
   default     = 4
 }
+
+variable "iap_client_id" {
+  type        = string
+  description = "OAuth2 client ID for IAP"
+  sensitive   = true
+}
+
+variable "iap_client_secret" {
+  type      = string
+  default   = "OAuth2 client secret for IAP"
+  sensitive = true
+}
