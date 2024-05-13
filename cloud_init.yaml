@@ -7,16 +7,9 @@ packages:
   - unzip
   - docker.io
 
-# TODO: run nomad as a non-root user?
-# users:
-#   - name: nomad
-#     gecos: Nomad User
-#     shell: /bin/bash
-#     groups: users,admin,wheel,lxd
-#     sudo: ALL=(ALL) NOPASSWD:ALL
-
 write_files:
   - path: /etc/nomad.d/nomad.hcl
+    # TODO: run nomad as a non-root user?
     permissions: 0o655
     content: |
       datacenter = "${nomad_datacenter}"
@@ -27,7 +20,7 @@ write_files:
         bootstrap_expect = ${ nomad_server_count }
 
         server_join {
-          "retry_join": ["provider=gce project_name=${ gcp_project } tag_value=${ nomad_server_tag }"]
+          retry_join = ["provider=gce project_name=${ gcp_project } tag_value=${ nomad_server_tag }"]
         }
       }
 
@@ -35,7 +28,7 @@ write_files:
         enabled = ${ nomad_client ? true : false }
 
         server_join {
-          "retry_join": ["provider=gce project_name=${ gcp_project } tag_value=${ nomad_server_tag }"]
+          retry_join = ["provider=gce project_name=${ gcp_project } tag_value=${ nomad_server_tag }"]
         }
       }
 
