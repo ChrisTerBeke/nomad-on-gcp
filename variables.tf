@@ -48,5 +48,5 @@ variable "nomad_server_count" {
 variable "nomad_client_count" {
   type        = number
   description = "Number of Nomad client nodes to create"
-  default     = 3
+  default     = 4
 }

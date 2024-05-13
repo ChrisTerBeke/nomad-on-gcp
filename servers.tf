@@ -53,16 +53,15 @@ resource "google_compute_region_instance_group_manager" "nomad_servers" {
   project            = var.project
   region             = var.region
   base_instance_name = "nomad-server"
-  target_size        = var.nomad_server_count
 
   version {
     instance_template = google_compute_instance_template.nomad_server.id
   }
 
-  # auto_healing_policies {
-  #   health_check      = google_compute_health_check.nomad_servers.id
-  #   initial_delay_sec = 300
-  # }
+  auto_healing_policies {
+    health_check      = google_compute_health_check.nomad_servers.id
+    initial_delay_sec = 300
+  }
 
   named_port {
     name = "nomad"
@@ -71,13 +70,14 @@ resource "google_compute_region_instance_group_manager" "nomad_servers" {
 }
 
 resource "google_compute_region_autoscaler" "nomad_servers" {
-  name   = "nomad-servers-autoscaler"
-  region = var.region
-  target = google_compute_instance_groupgoogle_compute_region_instance_group_manager_manager.nomad_servers.id
+  name    = "nomad-servers-autoscaler"
+  project = var.project
+  region  = var.region
+  target  = google_compute_region_instance_group_manager.nomad_servers.id
 
   autoscaling_policy {
     max_replicas    = 6
-    min_replicas    = 3
+    min_replicas    = var.nomad_server_count
     cooldown_period = 60
 
     cpu_utilization {
@@ -94,8 +94,7 @@ resource "google_compute_health_check" "nomad_servers" {
   healthy_threshold   = 2
   unhealthy_threshold = 10
 
-  http_health_check {
-    request_path = "/ui/"
-    port         = 4646
+  tcp_health_check {
+    port_name = "nomad"
   }
 }
