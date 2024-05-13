@@ -32,6 +32,10 @@ write_files:
         }
       }
 
+      ui {
+        enabled = true
+      }
+
   - path: /etc/systemd/system/nomad.service
     permissions: 0o655
     content: |

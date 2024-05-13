@@ -1,5 +1,6 @@
 locals {
   nomad_server_tag = "nomad-server"
+  zone             = "${var.region}-a" # TODO: support multiple zones
 }
 
 resource "google_compute_instance_template" "nomad_server" {
@@ -51,11 +52,34 @@ resource "google_compute_instance_template" "nomad_server" {
 resource "google_compute_instance_group_manager" "nomad_servers" {
   name               = "nomad-servers"
   project            = var.project
-  zone               = "${var.region}-a" # TODO: support multiple zones
+  zone               = local.zone
   base_instance_name = "nomad-server"
   target_size        = var.nomad_server_count
 
   version {
     instance_template = google_compute_instance_template.nomad_server.id
+  }
+
+  auto_healing_policies {
+    health_check      = google_compute_health_check.nomad_servers.id
+    initial_delay_sec = 300
+  }
+
+  named_port {
+    name = "nomad"
+    port = 4646
+  }
+}
+
+resource "google_compute_health_check" "nomad_servers" {
+  name                = "nomad-servers-health-check"
+  project             = var.project
+  check_interval_sec  = 5
+  timeout_sec         = 5
+  healthy_threshold   = 2
+  unhealthy_threshold = 10
+
+  http_health_check {
+    port = 4646
   }
 }
