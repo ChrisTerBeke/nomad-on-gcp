@@ -74,5 +74,5 @@ runcmd:
   - /opt/init/install-nomad.sh
 
 cloud_final_modules:
-  - [package_update_upgrade_install, always]
-  - [scripts-user, always]
+  - [package_update_upgrade_install, once]
+  - [scripts-user, once]
