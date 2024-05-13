@@ -99,6 +99,7 @@ resource "google_compute_firewall" "deny_all_egress" {
   project            = var.project
   direction          = "EGRESS"
   destination_ranges = ["0.0.0.0/0"]
+  priority           = 65534
 
   deny {
     protocol = "all"
