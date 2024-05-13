@@ -7,6 +7,7 @@ locals {
   https://cloud.google.com/vpc/docs/configure-private-google-access#config  */
   private_google_access_cidr_range    = "199.36.153.8/30"
   restricted_google_access_cidr_range = "199.36.153.4/30"
+  health_check_cidr_ranges            = ["130.211.0.0/22", "35.191.0.0/16"]
 
   private_service_access_dns_zones = {
     pkg-dev = {
@@ -88,6 +89,18 @@ resource "google_compute_firewall" "allow_iap_tcp_ingress" {
   network       = google_compute_network.default.name
   direction     = "INGRESS"
   source_ranges = [local.iap_tcp_forwarding_cidr_range]
+
+  allow {
+    protocol = "tcp"
+  }
+}
+
+resource "google_compute_firewall" "allow_health_check_tcp_ingress" {
+  name          = "allow-health-checks"
+  project       = var.project
+  network       = google_compute_network.default.name
+  direction     = "INGRESS"
+  source_ranges = local.health_check_cidr_ranges
 
   allow {
     protocol = "tcp"

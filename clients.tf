@@ -56,7 +56,7 @@ resource "google_compute_region_instance_group_manager" "nomad_clients" {
 
   auto_healing_policies {
     health_check      = google_compute_health_check.nomad_clients.id
-    initial_delay_sec = 300
+    initial_delay_sec = 120
   }
 
   named_port {
@@ -74,7 +74,7 @@ resource "google_compute_region_autoscaler" "nomad_clients" {
   autoscaling_policy {
     max_replicas    = 8
     min_replicas    = var.nomad_client_count
-    cooldown_period = 60
+    cooldown_period = 120
 
     cpu_utilization {
       target = 0.75
@@ -85,8 +85,8 @@ resource "google_compute_region_autoscaler" "nomad_clients" {
 resource "google_compute_health_check" "nomad_clients" {
   name                = "nomad-clients-health-check"
   project             = var.project
-  check_interval_sec  = 5
-  timeout_sec         = 5
+  check_interval_sec  = 10
+  timeout_sec         = 10
   healthy_threshold   = 2
   unhealthy_threshold = 10
 
