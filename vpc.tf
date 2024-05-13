@@ -136,6 +136,14 @@ resource "google_compute_network_firewall_policy_rule" "allow_nomad_bootstrap_eg
   }
 }
 
+# Associate the firewall policy with the network
+resource "google_compute_network_firewall_policy_association" "primary" {
+  name              = "nomad-bootstrap"
+  attachment_target = google_compute_network.default.id
+  firewall_policy   = google_compute_network_firewall_policy.nomad_bootstrap.name
+  project           = var.project
+}
+
 # Allow private google access egress traffic
 resource "google_compute_firewall" "allow_private_google_access_egress" {
   network     = google_compute_network.default.id
