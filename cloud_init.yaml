@@ -1,28 +1,85 @@
 #cloud-config
 
-package_update: true
-package_upgrade: true
+package_update: false
+package_upgrade: false
 packages:
   - curl
   - unzip
+  - docker.io
 
-users:
-- name: nomad
-  gecos: Nomad User
-  shell: /bin/bash
-  groups: users,admin,wheel,lxd
-  sudo: ALL=(ALL) NOPASSWD:ALL
+# TODO: run nomad as a non-root user?
+# users:
+#   - name: nomad
+#     gecos: Nomad User
+#     shell: /bin/bash
+#     groups: users,admin,wheel,lxd
+#     sudo: ALL=(ALL) NOPASSWD:ALL
 
 write_files:
   - path: /etc/nomad.d/nomad.hcl
-    owner: nomad:nomad
-    permissions: 0o600
-    defer: true
-    content: ${nomad_config}
+    permissions: 0o655
+    content: |
+      datacenter = "${nomad_datacenter}"
+      data_dir   = "/var/lib/nomad"
+
+      server {
+        enabled          = ${ nomad_server ? true : false }
+        bootstrap_expect = ${ nomad_server_count }
+
+        server_join {
+          "retry_join": ["provider=gce project_name=${ gcp_project } tag_value=${ nomad_server_tag }"]
+        }
+      }
+
+      client {
+        enabled = ${ nomad_client ? true : false }
+
+        server_join {
+          "retry_join": ["provider=gce project_name=${ gcp_project } tag_value=${ nomad_server_tag }"]
+        }
+      }
+
   - path: /etc/systemd/system/nomad.service
-    content: ${nomad_systemd_service}
+    permissions: 0o655
+    content: |
+      [Unit]
+      Description=Nomad
+      Documentation=https://nomadproject.io/docs/
+
+      [Service]
+      KillMode=process
+      KillSignal=SIGINT
+      ExecStart=/usr/local/bin/nomad agent --config /etc/nomad.d/ ${ nomad_server ? "-server" : "" } ${ nomad_client ? "-client" : "" }
+      ExecReload=/bin/kill -HUP $MAINPID
+      LimitNOFILE=65536
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
   - path: /opt/init/init.sh
-    content: ${init_script}
+    permissions: 0o755
+    content: |
+      sysctl -w vm.max_map_count=262144
+      echo vm.max_map_count=262144 | tee -a /etc/sysctl.conf
+      sysctl -w fs.file-max=65536
+      echo fs.file-max=65536 | tee -a /etc/sysctl.conf
+
+  - path: /opt/init/install-nomad.sh
+    permissions: 0o755
+    content: |
+      curl https://releases.hashicorp.com/nomad/${nomad_version}/nomad_${nomad_version}_linux_amd64.zip -o /opt/init/nomad.zip
+      unzip /opt/init/nomad.zip -d /opt/init/
+      cp /opt/init/nomad /usr/local/bin/nomad
+      chmod +x /usr/local/bin/nomad
+      systemctl daemon-reload
+      systemctl enable nomad
+      systemctl start nomad
 
 runcmd:
   - /opt/init/init.sh
+  - /opt/init/install-nomad.sh
+
+cloud_final_modules:
+  - [package_update_upgrade_install, always]
+  - [scripts-user, always]

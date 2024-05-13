@@ -15,22 +15,13 @@ resource "google_compute_instance_template" "nomad_server" {
     enable-oslogin         = true
     block-project-ssh-keys = true
     user-data = templatefile("${path.module}/cloud_init.yaml", {
-      nomad_version = var.nomad_version
-      nomad_config = templatefile("${path.module}/overlay/etc/nomad.d/nomad.hcl", {
-        gcp_project        = var.project
-        nomad_client       = false
-        nomad_datacenter   = var.nomad_datacenter
-        nomad_server       = true
-        nomad_server_count = var.nomad_server_count
-        nomad_server_tag   = local.nomad_server_tag
-      })
-      nomad_systemd_service = templatefile("${path.module}/overlay/etc/systemd/system/nomad.service", {
-        nomad_server = true
-        nomad_client = false
-      })
-      init_script = templatefile("${path.module}/overlay/opt/init/init.sh", {
-        nomad_version = var.nomad_version
-      })
+      nomad_version      = var.nomad_version
+      gcp_project        = var.project
+      nomad_client       = false
+      nomad_server       = true
+      nomad_datacenter   = var.nomad_datacenter
+      nomad_server_count = var.nomad_server_count
+      nomad_server_tag   = local.nomad_server_tag
     })
   }
 
