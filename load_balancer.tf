@@ -25,11 +25,6 @@ resource "google_compute_backend_service" "nomad_ui" {
   protocol              = "HTTP"
   timeout_sec           = 30
 
-  iap {
-    oauth2_client_id     = var.iap.oauth2_client_id
-    oauth2_client_secret = var.iap.oauth2_client_secret
-  }
-
   backend {
     group           = google_compute_region_instance_group_manager.nomad_servers.instance_group
     balancing_mode  = "UTILIZATION"
