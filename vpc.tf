@@ -25,11 +25,12 @@ locals {
 }
 
 resource "google_compute_network" "default" {
-  name                            = "nomad"
-  auto_create_subnetworks         = false
-  routing_mode                    = "GLOBAL"
-  delete_default_routes_on_create = true
-  project                         = var.project
+  name                                      = "nomad"
+  auto_create_subnetworks                   = false
+  routing_mode                              = "GLOBAL"
+  delete_default_routes_on_create           = true
+  project                                   = var.project
+  network_firewall_policy_enforcement_order = "BEFORE_CLASSIC_FIREWALL"
 }
 
 resource "google_compute_subnetwork" "default" {
