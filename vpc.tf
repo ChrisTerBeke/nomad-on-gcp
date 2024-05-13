@@ -52,3 +52,36 @@ resource "google_compute_route" "nomad_public_internet" {
   next_hop_gateway = "default-internet-gateway"
   priority         = 1000
 }
+
+resource "google_compute_router" "nomad" {
+  name    = "nomad_nat"
+  project = var.project
+  region  = var.region
+  network = google_compute_network.nomad.id
+
+  bgp {
+    asn = 64514
+  }
+}
+
+resource "google_compute_address" "nomad_nat" {
+  count   = 2
+  name    = "nomad-${count.index}"
+  project = var.project
+  region  = var.region
+}
+
+resource "google_compute_router_nat" "nomad" {
+  name                               = "nomad"
+  router                             = google_compute_router.nomad.name
+  project                            = var.project
+  region                             = var.region
+  nat_ip_allocate_option             = "MANUAL_ONLY"
+  nat_ips                            = google_compute_address.nomad.*.self_link
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}

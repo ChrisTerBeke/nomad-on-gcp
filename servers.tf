@@ -1,5 +1,5 @@
 resource "google_compute_instance_template" "nomad_server" {
-  name                 = "nomad-server"
+  name_prefix          = "nomad-server-"
   project              = var.project
   instance_description = "Nomad server"
   machine_type         = var.machine_type
@@ -10,7 +10,7 @@ resource "google_compute_instance_template" "nomad_server" {
     google-logging-enabled = true
     enable-oslogin         = true
     block-project-ssh-keys = true
-    startup-script         = "apt-get install cloud-init"
+    startup-script         = "apt-get install -y cloud-init"
     user-data = templatefile("${path.module}/cloud_init.yaml", {
       nomad_version = var.nomad_version
       nomad_config = templatefile("${path.module}/overlay/etc/nomad.d/nomad.hcl", {
