@@ -38,7 +38,7 @@ resource "google_compute_url_map" "nomad_ui" {
   default_service = google_compute_backend_service.nomad_ui.id
 }
 
-resource "google_compute_target_http_proxy" "nomad_ui" {
+resource "google_compute_target_https_proxy" "nomad_ui" {
   name    = "nomad-ui"
   project = var.project
   url_map = google_compute_url_map.nomad_ui.id
@@ -49,7 +49,7 @@ resource "google_compute_global_forwarding_rule" "nomad_ui" {
   project               = var.project
   ip_protocol           = "TCP"
   load_balancing_scheme = "EXTERNAL_MANAGED"
-  port_range            = "80-80"
-  target                = google_compute_target_http_proxy.nomad_ui.id
+  port_range            = "443-443"
+  target                = google_compute_target_https_proxy.nomad_ui.id
   ip_address            = google_compute_global_address.nomad_ui.id
 }
