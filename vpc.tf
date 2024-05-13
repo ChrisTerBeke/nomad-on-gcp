@@ -26,20 +26,21 @@ locals {
 
 resource "google_compute_network" "default" {
   name                                      = "nomad"
+  project                                   = var.project
   auto_create_subnetworks                   = false
   routing_mode                              = "GLOBAL"
   delete_default_routes_on_create           = true
-  project                                   = var.project
   network_firewall_policy_enforcement_order = "BEFORE_CLASSIC_FIREWALL"
 }
 
 resource "google_compute_subnetwork" "default" {
   name                     = "nomad"
+  project                  = var.project
   ip_cidr_range            = "10.0.0.0/16"
   region                   = var.region
   network                  = google_compute_network.default.id
   private_ip_google_access = true
-  project                  = var.project
+
   log_config {
     aggregation_interval = "INTERVAL_5_SEC"
     flow_sampling        = 0.5
@@ -48,22 +49,22 @@ resource "google_compute_subnetwork" "default" {
 
 # A route for public internet traffic
 resource "google_compute_route" "public_internet" {
-  network          = google_compute_network.default.id
   name             = "public-internet"
+  project          = var.project
+  network          = google_compute_network.default.id
   description      = "Custom static route to communicate with the public internet"
   dest_range       = "0.0.0.0/0"
   next_hop_gateway = "default-internet-gateway"
   priority         = 1000
-  project          = var.project
 }
 
 # Allow internal traffic within the network
 resource "google_compute_firewall" "allow_internal_ingress" {
   name          = "allow-internal-ingress"
+  project       = var.project
   network       = google_compute_network.default.name
   direction     = "INGRESS"
-  source_ranges = ["10.128.0.0/9"]
-  project       = var.project
+  source_ranges = ["10.0.0.0/16"]
 
   allow {
     protocol = "icmp"
@@ -83,9 +84,9 @@ resource "google_compute_firewall" "allow_internal_ingress" {
 # Allow incoming TCP traffic from Identity-Aware Proxy (IAP)
 resource "google_compute_firewall" "allow_iap_tcp_ingress" {
   name          = "allow-iap-tcp-ingress"
+  project       = var.project
   network       = google_compute_network.default.name
   direction     = "INGRESS"
-  project       = var.project
   source_ranges = [local.iap_tcp_forwarding_cidr_range]
 
   allow {
@@ -96,8 +97,8 @@ resource "google_compute_firewall" "allow_iap_tcp_ingress" {
 # By default, deny all egress traffic
 resource "google_compute_firewall" "deny_all_egress" {
   name               = "deny-all-egress"
-  network            = google_compute_network.default.name
   project            = var.project
+  network            = google_compute_network.default.name
   direction          = "EGRESS"
   destination_ranges = ["0.0.0.0/0"]
   priority           = 65534
@@ -109,18 +110,18 @@ resource "google_compute_firewall" "deny_all_egress" {
 
 resource "google_compute_network_firewall_policy" "nomad_bootstrap" {
   name        = "nomad-bootstrap"
-  description = "Firewall policy to allow Nomad instances to bootstrap"
   project     = var.project
+  description = "Firewall policy to allow Nomad instances to bootstrap"
 }
 
 # Allow Nomad instances to communicate with only the FQDNs required for bootstrapping
 resource "google_compute_network_firewall_policy_rule" "allow_nomad_bootstrap_egress" {
   firewall_policy         = google_compute_network_firewall_policy.nomad_bootstrap.name
+  project                 = var.project
   priority                = 1000
   action                  = "allow"
   direction               = "EGRESS"
   target_service_accounts = [google_service_account.nomad.email]
-  project                 = var.project
 
   match {
     dest_fqdns = [
@@ -145,20 +146,20 @@ resource "google_compute_network_firewall_policy_rule" "allow_nomad_bootstrap_eg
 # Associate the firewall policy with the network
 resource "google_compute_network_firewall_policy_association" "primary" {
   name              = "nomad-bootstrap"
+  project           = var.project
   attachment_target = google_compute_network.default.id
   firewall_policy   = google_compute_network_firewall_policy.nomad_bootstrap.name
-  project           = var.project
 }
 
 # Allow private google access egress traffic
 resource "google_compute_firewall" "allow_private_google_access_egress" {
-  network     = google_compute_network.default.id
   name        = "allow-private-google-access-egress"
+  project     = var.project
+  network     = google_compute_network.default.id
   description = "Allow private google access for all instances"
   priority    = 4000
   direction   = "EGRESS"
   target_tags = []
-  project     = var.project
 
   destination_ranges = [
     local.private_google_access_cidr_range,
@@ -177,9 +178,9 @@ resource "google_compute_firewall" "allow_private_google_access_egress" {
 
 resource "google_compute_router" "default" {
   name    = "router"
+  project = var.project
   region  = var.region
   network = google_compute_network.default.id
-  project = var.project
 
   bgp {
     asn = 64514
@@ -190,19 +191,19 @@ resource "google_compute_router" "default" {
 resource "google_compute_address" "nat" {
   count   = 2
   name    = "nat-${count.index}"
-  region  = var.region
   project = var.project
+  region  = var.region
 }
 
 # Create a NAT gateway to allow instances without external IP addresses to access the internet
 resource "google_compute_router_nat" "default" {
   name                               = "nat"
+  project                            = var.project
   router                             = google_compute_router.default.name
   region                             = google_compute_router.default.region
   nat_ip_allocate_option             = "MANUAL_ONLY"
   nat_ips                            = google_compute_address.nat.*.self_link
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
-  project                            = var.project
 
   log_config {
     enable = true
@@ -214,9 +215,9 @@ resource "google_compute_router_nat" "default" {
 resource "google_dns_managed_zone" "private_service_access" {
   for_each   = { for k, v in local.private_service_access_dns_zones : k => v }
   name       = each.key
+  project    = var.project
   dns_name   = each.value.dns
   visibility = "private"
-  project    = var.project
 
   private_visibility_config {
     dynamic "networks" {
@@ -230,45 +231,43 @@ resource "google_dns_managed_zone" "private_service_access" {
 }
 
 resource "google_dns_record_set" "a_records" {
-  for_each = { for k, v in google_dns_managed_zone.private_service_access : k => v }
-
+  for_each     = { for k, v in google_dns_managed_zone.private_service_access : k => v }
   name         = each.value.dns_name
+  project      = var.project
   managed_zone = each.value.name
   type         = "A"
   ttl          = 300
   rrdatas      = local.private_service_access_dns_zones[each.key].ips
-  project      = var.project
 }
 
 resource "google_dns_record_set" "cname_records" {
-  for_each = { for k, v in google_dns_managed_zone.private_service_access : k => v }
-
+  for_each     = { for k, v in google_dns_managed_zone.private_service_access : k => v }
   name         = "*.${each.value.dns_name}"
+  project      = var.project
   managed_zone = each.value.name
   type         = "CNAME"
   ttl          = 300
   rrdatas      = [each.value.dns_name]
-  project      = var.project
 }
 
 # Route private google access traffic to the default internet gateway
 resource "google_compute_route" "private_google_access" {
   network          = google_compute_network.default.id
   name             = "private-google-access"
+  project          = var.project
   description      = "Custom static route to communicate with Google APIs using private.googleapis.com"
   dest_range       = local.private_google_access_cidr_range
   next_hop_gateway = "default-internet-gateway"
   priority         = 1000
-  project          = var.project
 }
 
 # Route restricted google access traffic to the default internet gateway
 resource "google_compute_route" "restricted_google_access" {
   network          = google_compute_network.default.id
   name             = "restricted-google-access"
+  project          = var.project
   description      = "Custom static route to communicate with Google APIs using restricted.googleapis.com"
   dest_range       = local.restricted_google_access_cidr_range
   next_hop_gateway = "default-internet-gateway"
   priority         = 1000
-  project          = var.project
 }
