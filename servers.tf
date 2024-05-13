@@ -36,7 +36,7 @@ resource "google_compute_instance_template" "nomad_server" {
   }
 
   network_interface {
-    subnetwork         = google_compute_subnetwork.nomad.id
+    subnetwork         = google_compute_subnetwork.default.id
     subnetwork_project = var.project
   }
 
