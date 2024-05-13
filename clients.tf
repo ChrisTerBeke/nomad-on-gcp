@@ -55,10 +55,10 @@ resource "google_compute_instance_group_manager" "nomad_clients" {
     instance_template = google_compute_instance_template.nomad_client.id
   }
 
-  auto_healing_policies {
-    health_check      = google_compute_health_check.nomad_clients.id
-    initial_delay_sec = 300
-  }
+  # auto_healing_policies {
+  #   health_check      = google_compute_health_check.nomad_clients.id
+  #   initial_delay_sec = 300
+  # }
 
   named_port {
     name = "nomad"
@@ -75,6 +75,7 @@ resource "google_compute_health_check" "nomad_clients" {
   unhealthy_threshold = 10
 
   http_health_check {
+    request_path = "/ui/"
     port = 4646
   }
 }
