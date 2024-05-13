@@ -6,7 +6,7 @@ server {
   bootstrap_expect = ${ nomad_server_count }
 
   server_join {
-    retry_join = ["TODO", "INJECT", "IP", "ADDRESSS"]
+    "retry_join": ["provider=gce project_name=${ gcp_project } tag_value=${ nomad_server_tag }"]
   }
 }
 

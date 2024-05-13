@@ -1,10 +1,14 @@
+locals {
+  nomad_server_tag = "nomad-server"
+}
+
 resource "google_compute_instance_template" "nomad_server" {
   name_prefix          = "nomad-server-"
   project              = var.project
   instance_description = "Nomad server"
   machine_type         = var.machine_type
   region               = var.region
-  tags                 = ["nomad-server"]
+  tags                 = [local.nomad_server_tag]
 
   metadata = {
     google-logging-enabled = true
@@ -13,10 +17,12 @@ resource "google_compute_instance_template" "nomad_server" {
     user-data = templatefile("${path.module}/cloud_init.yaml", {
       nomad_version = var.nomad_version
       nomad_config = templatefile("${path.module}/overlay/etc/nomad.d/nomad.hcl", {
-        nomad_server       = true
+        gcp_project        = var.project
         nomad_client       = false
         nomad_datacenter   = var.nomad_datacenter
+        nomad_server       = true
         nomad_server_count = var.nomad_server_count
+        nomad_server_tag   = local.nomad_server_tag
       })
       nomad_systemd_service = templatefile("${path.module}/overlay/etc/systemd/system/nomad.service", {
         nomad_server = true
