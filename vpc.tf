@@ -111,7 +111,7 @@ resource "google_compute_network_firewall_policy" "nomad_bootstrap" {
   project     = var.project
 }
 
-# Allow Nomad instances to communicate with only the FQDNs to install packages
+# Allow Nomad instances to communicate with only the FQDNs required for bootstrapping
 resource "google_compute_network_firewall_policy_rule" "allow_nomad_bootstrap_egress" {
   firewall_policy         = google_compute_network_firewall_policy.nomad_bootstrap.name
   priority                = 1000
