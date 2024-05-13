@@ -12,7 +12,7 @@ variable "region" {
 variable "base_image" {
   type        = string
   description = "The base image to use for the Nomad server and client nodes"
-  default     = "debian-cloud/debian-12"
+  default     = "ubuntu-os-cloud/ubuntu-2404-lts-amd64"
 }
 
 variable "machine_type" {
