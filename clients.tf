@@ -13,12 +13,12 @@ resource "google_compute_instance_template" "nomad_client" {
     user-data = templatefile("${path.module}/cloud_init.yaml", {
       nomad_version = var.nomad_version
       nomad_config = templatefile("${path.module}/overlay/etc/nomad.d/nomad.hcl", {
-        nomad_server_tag   = local.nomad_server_tag
         gcp_project        = var.project
         nomad_client       = true
         nomad_datacenter   = var.nomad_datacenter
         nomad_server       = false
         nomad_server_count = var.nomad_server_count
+        nomad_server_tag   = local.nomad_server_tag
       })
       nomad_systemd_service = templatefile("${path.module}/overlay/etc/systemd/system/nomad.service", {
         nomad_server = false
