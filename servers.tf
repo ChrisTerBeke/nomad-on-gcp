@@ -1,6 +1,5 @@
 locals {
   nomad_server_tag = "nomad-server"
-  zone             = "${var.region}-a" # TODO: support multiple zones
 }
 
 resource "google_compute_instance_template" "nomad_server" {
@@ -49,10 +48,10 @@ resource "google_compute_instance_template" "nomad_server" {
   }
 }
 
-resource "google_compute_instance_group_manager" "nomad_servers" {
+resource "google_compute_region_instance_group_manager" "nomad_servers" {
   name               = "nomad-servers"
   project            = var.project
-  zone               = local.zone
+  region             = var.region
   base_instance_name = "nomad-server"
   target_size        = var.nomad_server_count
 
@@ -72,10 +71,9 @@ resource "google_compute_instance_group_manager" "nomad_servers" {
 }
 
 resource "google_compute_region_autoscaler" "nomad_servers" {
-  provider = google-beta
   name   = "nomad-servers-autoscaler"
-  region = local.zone
-  target = google_compute_instance_group_manager.nomad_servers.id
+  region = var.region
+  target = google_compute_instance_groupgoogle_compute_region_instance_group_manager_manager.nomad_servers.id
 
   autoscaling_policy {
     max_replicas    = 6
@@ -98,6 +96,6 @@ resource "google_compute_health_check" "nomad_servers" {
 
   http_health_check {
     request_path = "/ui/"
-    port = 4646
+    port         = 4646
   }
 }

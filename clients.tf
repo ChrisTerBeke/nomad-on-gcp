@@ -44,10 +44,10 @@ resource "google_compute_instance_template" "nomad_client" {
   }
 }
 
-resource "google_compute_instance_group_manager" "nomad_clients" {
+resource "google_compute_region_instance_group_manager" "nomad_clients" {
   name               = "nomad-clients"
   project            = var.project
-  zone               = "${var.region}-a" # TODO: support multiple zones
+  region             = var.region
   base_instance_name = "nomad-client"
   target_size        = var.nomad_client_count
 
@@ -67,10 +67,9 @@ resource "google_compute_instance_group_manager" "nomad_clients" {
 }
 
 resource "google_compute_region_autoscaler" "nomad_clients" {
-  provider = google-beta
   name   = "nomad-clients-autoscaler"
-  region = local.zone
-  target = google_compute_instance_group_manager.nomad_clients.id
+  region = var.region
+  target = google_compute_region_instance_group_manager.nomad_clients.id
 
   autoscaling_policy {
     max_replicas    = 8
@@ -93,6 +92,6 @@ resource "google_compute_health_check" "nomad_clients" {
 
   http_health_check {
     request_path = "/ui/"
-    port = 4646
+    port         = 4646
   }
 }
