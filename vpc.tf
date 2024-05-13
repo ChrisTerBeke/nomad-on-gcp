@@ -124,6 +124,10 @@ resource "google_compute_network_firewall_policy_rule" "allow_nomad_bootstrap_eg
     dest_fqdns = [
       "releases.hashicorp.com",
       "get.docker.com",
+      "packages.debian.org",
+      "debian.map.fastly.net",
+      "deb.debian.org",
+      "packages.cloud.google",
     ]
 
     layer4_configs {
