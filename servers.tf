@@ -58,6 +58,15 @@ resource "google_compute_region_instance_group_manager" "nomad_servers" {
     instance_template = google_compute_instance_template.nomad_server.id
   }
 
+  update_policy {
+    minimal_action               = "REFRESH"
+    type                         = "PROACTIVE"
+    instance_redistribution_type = "PROACTIVE"
+    max_surge_percent            = 100
+    max_unavailable_percent      = 100
+    replacement_method           = "SUBSTITUTE"
+  }
+
   auto_healing_policies {
     health_check      = google_compute_health_check.nomad_servers.id
     initial_delay_sec = 120
