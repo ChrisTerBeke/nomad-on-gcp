@@ -49,6 +49,7 @@ resource "google_compute_instance_template" "nomad_server" {
 }
 
 resource "google_compute_region_instance_group_manager" "nomad_servers" {
+  provider           = google-beta
   name               = "nomad-servers"
   project            = var.project
   region             = var.region
@@ -65,6 +66,7 @@ resource "google_compute_region_instance_group_manager" "nomad_servers" {
     replacement_method           = "SUBSTITUTE"
     max_surge_fixed              = 3 # number of zones
     max_unavailable_fixed        = 0 # always create new clients before destroying old ones
+    min_ready_sec                = 120
   }
 
   auto_healing_policies {
