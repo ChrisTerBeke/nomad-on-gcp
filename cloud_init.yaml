@@ -9,7 +9,6 @@ packages:
 
 write_files:
   - path: /etc/nomad.d/nomad.hcl
-    # TODO: run nomad as a non-root user?
     permissions: 0o655
     content: |
       datacenter = "${nomad_datacenter}"
@@ -54,6 +53,13 @@ write_files:
       [Install]
       WantedBy=multi-user.target
 
+  - path: /etc/sysctl.d/bridge.conf
+    permissions: 0o655
+    content: |
+      net.bridge.bridge-nf-call-arptables = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+
   - path: /opt/init/init.sh
     permissions: 0o755
     content: |
@@ -73,9 +79,17 @@ write_files:
       systemctl enable nomad
       systemctl start nomad
 
+  - path: /opt/init/install-cni.sh
+    permissions: 0o755
+    content: |
+      curl -L -o cni-plugins.tgz https://github.com/containernetworking/plugins/releases/download/v1.0.0/cni-plugins-linux-amd64-v1.0.0.tgz
+      mkdir -p /opt/cni/bin
+      tar -C /opt/cni/bin -xzf cni-plugins.tgz
+
 runcmd:
   - /opt/init/init.sh
   - /opt/init/install-nomad.sh
+  - /opt/init/install-cni.sh
 
 cloud_final_modules:
   - [package_update_upgrade_install, once]
