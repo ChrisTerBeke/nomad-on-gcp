@@ -85,8 +85,9 @@ resource "google_compute_region_autoscaler" "nomad_servers" {
   target  = google_compute_region_instance_group_manager.nomad_servers.id
 
   autoscaling_policy {
-    max_replicas = var.nomad_max_server_count
-    min_replicas = var.nomad_server_count
+    max_replicas    = var.nomad_max_server_count
+    min_replicas    = var.nomad_server_count
+    cooldown_period = 120
 
     cpu_utilization {
       target = 0.75

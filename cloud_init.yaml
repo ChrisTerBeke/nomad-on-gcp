@@ -11,6 +11,7 @@ write_files:
   - path: /etc/nomad.d/nomad.hcl
     permissions: 0o655
     content: |
+      region     = "global"
       datacenter = "${nomad_datacenter}"
       data_dir   = "/var/lib/nomad"
 
