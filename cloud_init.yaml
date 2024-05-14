@@ -68,6 +68,13 @@ write_files:
       sysctl -w fs.file-max=65536
       echo fs.file-max=65536 | tee -a /etc/sysctl.conf
 
+  - path: /opt/init/install-cni.sh
+    permissions: 0o755
+    content: |
+      curl -L -o cni-plugins.tgz https://github.com/containernetworking/plugins/releases/download/v1.0.0/cni-plugins-linux-amd64-v1.0.0.tgz
+      mkdir -p /opt/cni/bin
+      tar -C /opt/cni/bin -xzf cni-plugins.tgz
+
   - path: /opt/init/install-nomad.sh
     permissions: 0o755
     content: |
@@ -79,17 +86,10 @@ write_files:
       systemctl enable nomad
       systemctl start nomad
 
-  - path: /opt/init/install-cni.sh
-    permissions: 0o755
-    content: |
-      curl -L -o cni-plugins.tgz https://github.com/containernetworking/plugins/releases/download/v1.0.0/cni-plugins-linux-amd64-v1.0.0.tgz
-      mkdir -p /opt/cni/bin
-      tar -C /opt/cni/bin -xzf cni-plugins.tgz
-
 runcmd:
   - /opt/init/init.sh
-  - /opt/init/install-nomad.sh
   - /opt/init/install-cni.sh
+  - /opt/init/install-nomad.sh
 
 cloud_final_modules:
   - [package_update_upgrade_install, always]
