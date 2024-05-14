@@ -27,12 +27,6 @@ variable "nomad_version" {
   default     = "1.7.7"
 }
 
-variable "nomad_bind_addr" {
-  type        = string
-  description = "Address to listen on for the server and client"
-  default     = "0.0.0.0"
-}
-
 variable "nomad_datacenter" {
   type        = string
   description = "Datacenter name for the Nomad cluster"
@@ -45,10 +39,22 @@ variable "nomad_server_count" {
   default     = 3
 }
 
+variable "nomad_max_server_count" {
+  type        = number
+  description = "Maximum number of Nomad server nodes to create"
+  default     = 6
+}
+
 variable "nomad_client_count" {
   type        = number
   description = "Number of Nomad client nodes to create"
   default     = 4
+}
+
+variable "nomad_max_client_count" {
+  type        = number
+  description = "Maximum number of Nomad client nodes to create"
+  default     = 8
 }
 
 variable "iap_client_id" {

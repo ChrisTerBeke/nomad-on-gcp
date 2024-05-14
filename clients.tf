@@ -55,12 +55,12 @@ resource "google_compute_region_instance_group_manager" "nomad_clients" {
   }
 
   update_policy {
-    minimal_action               = "REFRESH"
+    minimal_action               = "REPLACE"
     type                         = "PROACTIVE"
     instance_redistribution_type = "PROACTIVE"
-    max_surge_percent            = 100
-    max_unavailable_percent      = 100
     replacement_method           = "SUBSTITUTE"
+    max_surge_fixed              = var.nomad_max_client_count
+    max_unavailable_fixed        = 0
   }
 
   auto_healing_policies {
@@ -81,9 +81,8 @@ resource "google_compute_region_autoscaler" "nomad_clients" {
   target  = google_compute_region_instance_group_manager.nomad_clients.id
 
   autoscaling_policy {
-    max_replicas    = 8
-    min_replicas    = var.nomad_client_count
-    cooldown_period = 120
+    max_replicas = var.nomad_max_client_count
+    min_replicas = var.nomad_client_count
 
     cpu_utilization {
       target = 0.75
