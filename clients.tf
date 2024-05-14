@@ -74,6 +74,16 @@ resource "google_compute_region_instance_group_manager" "nomad_clients" {
     name = "nomad"
     port = 4646
   }
+
+  named_port {
+    name = "http"
+    port = 80
+  }
+
+  named_port {
+    name = "traefik"
+    port = 8080
+  }
 }
 
 resource "google_compute_region_autoscaler" "nomad_clients" {
