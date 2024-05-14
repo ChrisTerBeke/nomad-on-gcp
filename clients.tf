@@ -59,8 +59,8 @@ resource "google_compute_region_instance_group_manager" "nomad_clients" {
     type                         = "PROACTIVE"
     instance_redistribution_type = "PROACTIVE"
     replacement_method           = "SUBSTITUTE"
-    max_surge_fixed              = 1
-    max_unavailable_fixed        = 0
+    max_surge_fixed              = 3 # number of zones
+    max_unavailable_fixed        = 0 # always create new clients before destroying old ones
   }
 
   auto_healing_policies {
