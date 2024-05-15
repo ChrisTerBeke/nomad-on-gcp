@@ -21,7 +21,7 @@ job "traefik" {
  
       config {
         image = "traefik:3.0.0"
-        ports = ["admin", "http"]
+        ports = ["http"]
         args  = [
           "--api.dashboard=true",
           "--api.insecure=true",
