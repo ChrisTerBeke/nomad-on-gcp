@@ -13,7 +13,7 @@ job "example" {
       mode = "bridge"
       
       port "http" {
-        to = "80"
+        to = 80
       }
     }
     
@@ -24,7 +24,8 @@ job "example" {
       
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.http.rule=Host(`public.christerbeke.com`)"
+        # "traefik.http.routers.http.rule=Host(`public.christerbeke.com`)",
+        "traefik.http.routers.http.rule=Path(`/echo`)",
       ]
     }
     
@@ -36,9 +37,9 @@ job "example" {
         ports = ["http"]
         args = [
           "-listen",
-          ":80",
+          ":${NOMAD_PORT_http}",
           "-text",
-          "hello world",
+          "hello world from Node: ${node.unique.id}, Alloc: ${NOMAD_ALLOC_ID}",
         ]
       }
     }
