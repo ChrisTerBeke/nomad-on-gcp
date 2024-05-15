@@ -11,6 +11,7 @@ resource "google_compute_health_check" "nomad_public" {
   healthy_threshold   = 2
   unhealthy_threshold = 10
 
+  # we cannot use the http_health_check here because the default route might return a 404
   tcp_health_check {
     port_name = "http"
   }

@@ -48,16 +48,6 @@ resource "google_compute_subnetwork" "default" {
   }
 }
 
-resource "google_compute_subnetwork" "load_balancer_proxy" {
-  name          = "nomad-lb-proxy"
-  project       = var.project
-  ip_cidr_range = "10.20.0.0/16"
-  region        = var.region
-  network       = google_compute_network.default.id
-  purpose       = "REGIONAL_MANAGED_PROXY"
-  role          = "ACTIVE"
-}
-
 # A route for public internet traffic
 resource "google_compute_route" "public_internet" {
   name             = "public-internet"
@@ -78,7 +68,6 @@ resource "google_compute_firewall" "allow_internal_ingress" {
 
   source_ranges = [
     google_compute_subnetwork.default.ip_cidr_range,
-    google_compute_subnetwork.load_balancer_proxy.ip_cidr_range,
   ]
 
   allow {
@@ -104,7 +93,6 @@ resource "google_compute_firewall" "allow_internal_egress" {
 
   source_ranges = [
     google_compute_subnetwork.default.ip_cidr_range,
-    google_compute_subnetwork.load_balancer_proxy.ip_cidr_range,
   ]
 
   allow {
@@ -143,7 +131,7 @@ resource "google_compute_firewall" "allow_health_check_tcp_ingress" {
   source_ranges = local.health_check_cidr_ranges
 
   allow {
-    protocol = "tcp"
+    protocol = "all"
   }
 }
 
