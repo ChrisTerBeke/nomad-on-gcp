@@ -8,10 +8,6 @@ job "traefik" {
       port "http"{
          static = 80
       }
-      
-      port "admin"{
-         static = 8080
-      }
     }
 
     service {
@@ -30,7 +26,6 @@ job "traefik" {
           "--api.dashboard=true",
           "--api.insecure=true",
           "--entrypoints.web.address=:${NOMAD_PORT_http}",
-          "--entrypoints.traefik.address=:${NOMAD_PORT_admin}",
           "--providers.nomad=true",
           "--providers.nomad.endpoint.address=http://${NOMAD_IP_http}:4646"
         ]
