@@ -108,4 +108,8 @@ resource "google_compute_health_check" "nomad_clients" {
   tcp_health_check {
     port_name = "nomad"
   }
+
+  log_config {
+    enable = true
+  }
 }
