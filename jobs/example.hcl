@@ -24,7 +24,6 @@ job "example" {
       
       tags = [
         "traefik.enable=true",
-        # "traefik.http.routers.http.rule=Host(`public.christerbeke.com`)",
         "traefik.http.routers.http.rule=Path(`/echo`)",
       ]
     }
