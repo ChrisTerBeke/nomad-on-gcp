@@ -34,6 +34,6 @@ jobs:
       - name: Terraform apply
         run: terraform apply -auto-approve
         env:
-          TF_VAR_GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          TF_VAR_IAP_CLIENT_ID: ${{ secrets.IAP_CLIENT_ID }}
-          TF_VAR_IAP_CLIENT_SECRET: ${{ secrets.IAP_CLIENT_SECRET }}
+          TF_VAR_project: ${{ vars.GCP_PROJECT_ID }}
+          TF_VAR_iap_client_id: ${{ secrets.IAP_CLIENT_ID }}
+          TF_VAR_iap_client_secret: ${{ secrets.IAP_CLIENT_SECRET }}
