@@ -107,7 +107,8 @@ resource "google_compute_health_check" "nomad_clients" {
   unhealthy_threshold = 10
 
   http_health_check {
-    port_name    = "nomad"
+    # port_name    = "nomad"
+    port         = 4646
     request_path = "/v1/agent/health"
   }
 
