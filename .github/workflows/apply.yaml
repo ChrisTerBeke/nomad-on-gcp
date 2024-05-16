@@ -26,4 +26,4 @@ jobs:
       - name: Terraform init
         run: terraform init
       - name: Terraform apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var-file=env.tfvars
