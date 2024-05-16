@@ -18,6 +18,7 @@ jobs:
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
+    environment: ${{ vars.GCP_PROJECT_ID }}
     steps:
       - name: GitHub checkout
         uses: actions/checkout@v4
