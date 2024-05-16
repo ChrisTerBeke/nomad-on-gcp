@@ -13,6 +13,8 @@ jobs:
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
+    env:
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
     steps:
       - name: GitHub checkout
         uses: actions/checkout@v4
@@ -30,4 +32,4 @@ jobs:
       - name: Terraform validate
         run: terraform validate
       - name: Terraform plan
-        run: terraform plan -var-file=env.tfvars
+        run: terraform plan
