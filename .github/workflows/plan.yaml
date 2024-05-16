@@ -10,6 +10,10 @@ permissions:
   id-token: write
   contents: read
 
+concurrency:
+  group: terraform
+  cancel-in-progress: false
+
 jobs:
   terraform:
     name: Terraform
