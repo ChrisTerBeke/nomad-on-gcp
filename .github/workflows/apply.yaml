@@ -1,0 +1,29 @@
+name: Terraform Apply
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: GitHub checkout
+        uses: actions/checkout@v4
+      - name: Google Cloud authenticate
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/998902220107/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: github-actions@summer-sun-394510.iam.gserviceaccount.com
+      - name: Terraform setup
+        uses: hashicorp/setup-terraform@v2
+      - name: Terraform init
+        run: terraform init
+      - name: Terraform apply
+        run: terraform apply -auto-approve
