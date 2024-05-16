@@ -72,7 +72,7 @@ resource "google_compute_region_instance_group_manager" "nomad_clients" {
 
   named_port {
     name = "nomad"
-    port = 4646
+    port = var.nomad_agent_port
   }
 
   named_port {
@@ -107,8 +107,7 @@ resource "google_compute_health_check" "nomad_clients" {
   unhealthy_threshold = 10
 
   http_health_check {
-    # port_name    = "nomad"
-    port         = 4646
+    port         = var.nomad_agent_port
     request_path = "/v1/agent/health"
   }
 

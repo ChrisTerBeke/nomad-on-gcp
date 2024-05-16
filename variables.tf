@@ -57,6 +57,12 @@ variable "nomad_max_client_count" {
   default     = 8
 }
 
+variable "nomad_agent_port" {
+  type        = number
+  description = "Port of the Nomad HTTP service"
+  default     = 4646
+}
+
 variable "iap_client_id" {
   type        = string
   description = "OAuth2 client ID for IAP"
