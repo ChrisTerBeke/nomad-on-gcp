@@ -18,7 +18,7 @@ write_files:
 
       server {
         enabled          = ${nomad_server ? true : false}
-        bootstrap_expect = ${nomad_server_count}
+        bootstrap_expect = 6
 
         server_join {
           retry_join = ["provider=gce project_name=${gcp_project} tag_value=${nomad_server_tag}"]
