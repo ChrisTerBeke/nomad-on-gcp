@@ -62,7 +62,7 @@ EOH
 
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.http.rule=Path(`/prometheus`)",
+          "traefik.http.routers.prometheus.rule=Path(`/prometheus`) || PathPrefix(`/prometheus/`)",
         ]
 
         check {
