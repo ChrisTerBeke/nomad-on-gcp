@@ -3,7 +3,7 @@
 users:
   - name: nomad
     groups: docker
-
+  
 write_files:
   - path: /var/nomad/nomad.hcl
     permissions: "0644"
@@ -66,9 +66,7 @@ write_files:
       ExecStart=/usr/bin/docker run \
         --init \
         --rm \
-        --publish 4646:4646 \
-        --publish 4647:4647 \
-        --publish 4648:4648 \
+        --network host \
         --volume /var/run/docker.sock:/var/run/docker.sock \
         --volume /etc/ssl/certs:/etc/ssl/certs \
         --mount type=bind,source=/var/nomad/nomad.hcl,target=/etc/nomad.d/nomad.hcl,readonly \
