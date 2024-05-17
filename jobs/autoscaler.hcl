@@ -6,7 +6,6 @@ job "autoscaler" {
 
     network {
       port "http" {}
-      port "promtail" {}
     }
 
     task "autoscaler" {
@@ -15,17 +14,20 @@ job "autoscaler" {
       config {
         image   = "hashicorp/nomad-autoscaler:0.4.3"
         command = "nomad-autoscaler"
-        ports   = ["http"]
 
         args = [
           "agent",
           "-config",
-          "${NOMAD_TASK_DIR}/config.hcl",
+          "$${NOMAD_TASK_DIR}/config.hcl",
           "-http-bind-address",
           "0.0.0.0",
           "-http-bind-port",
-          "${NOMAD_PORT_http}",
+          "$${NOMAD_PORT_http}",
+          "-policy-dir",
+          "$${NOMAD_TASK_DIR}/policies/",
         ]
+
+        ports = ["http"]
       }
 
       template {
@@ -34,24 +36,71 @@ nomad {
   address = "http://{{env "attr.unique.network.ip-address" }}:4646"
 }
 
-telemetry {
-  prometheus_metrics = true
-  disable_hostname   = true
-}
-
 apm "prometheus" {
   driver = "prometheus"
   config = {
-    address = "http://{{ env "attr.unique.network.ip-address" }}:9090"
+    address = "http://{{ range service "prometheus" }}{{ .Address }}:{{ .Port }}{{ end }}"
   }
+}
+
+target "gce-mig" {
+  driver = "gce-mig"
 }
 
 strategy "target-value" {
   driver = "target-value"
 }
-          EOF
+EOF
 
-        destination = "${NOMAD_TASK_DIR}/config.hcl"
+        destination = "$${NOMAD_TASK_DIR}/config.hcl"
+      }
+
+      template {
+        data = <<EOF
+scaling "cluster_policy" {
+  enabled = true
+  min     = 1
+  max     = 2
+
+  policy {
+
+    cooldown            = "2m"
+    evaluation_interval = "1m"
+
+    check "cpu_allocated_percentage" {
+      source = "prometheus"
+      query  = "sum(nomad_client_allocated_cpu{node_class=\"hashistack\"}*100/(nomad_client_unallocated_cpu{node_class=\"hashistack\"}+nomad_client_allocated_cpu{node_class=\"hashistack\"}))/count(nomad_client_allocated_cpu{node_class=\"hashistack\"})"
+
+      strategy "target-value" {
+        target = 70
+      }
+    }
+
+    check "mem_allocated_percentage" {
+      source = "prometheus"
+      query  = "sum(nomad_client_allocated_memory{node_class=\"hashistack\"}*100/(nomad_client_unallocated_memory{node_class=\"hashistack\"}+nomad_client_allocated_memory{node_class=\"hashistack\"}))/count(nomad_client_allocated_memory{node_class=\"hashistack\"})"
+
+      strategy "target-value" {
+        target = 70
+      }
+    }
+
+    target "gce-mig" {
+      project             = "${project}"
+      %{if mig_type == "regional"}
+      region              = "${region}"
+      %{else}
+      zone                = "${zone}"
+      %{endif}
+      mig_name            = "${mig_name}"
+      node_class          = "hashistack"
+      node_drain_deadline = "5m"
+    }
+  }
+}
+EOF
+
+        destination = "$${NOMAD_TASK_DIR}/policies/hashistack.hcl"
       }
 
       resources {
@@ -60,85 +109,15 @@ strategy "target-value" {
       }
 
       service {
-        name     = "autoscaler"
-        provider = "nomad"
-        port     = "http"
+        name = "autoscaler"
+        port = "http"
 
         check {
           type     = "http"
           path     = "/v1/health"
-          interval = "3s"
-          timeout  = "1s"
+          interval = "5s"
+          timeout  = "2s"
         }
-      }
-    }
-
-    task "promtail" {
-      driver = "docker"
-
-      lifecycle {
-        hook    = "prestart"
-        sidecar = true
-      }
-
-      config {
-        image = "grafana/promtail:2.9.8"
-        ports = ["promtail"]
-
-        args = [
-          "-config.file",
-          "local/promtail.yaml",
-        ]
-      }
-
-      template {
-        data = <<EOH
-server:
-  http_listen_port: {{ env "NOMAD_PORT_promtail" }}
-  grpc_listen_port: 0
-
-positions:
-  filename: /tmp/positions.yaml
-
-client:
-  url: http://{{ range $i, $s := nomadService "loki" }}{{ if eq $i 0 }}{{.Address}}:{{.Port}}{{end}}{{end}}/api/prom/push
-
-scrape_configs:
-- job_name: system
-  static_configs:
-  - targets:
-      - localhost
-    labels:
-      task: autoscaler
-      __path__: /alloc/logs/autoscaler*
-  pipeline_stages:
-  - match:
-      selector: '{task="autoscaler"}'
-      stages:
-      - regex:
-          expression: '.*policy_id=(?P<policy_id>[a-zA-Z0-9_-]+).*source=(?P<source>[a-zA-Z0-9_-]+).*strategy=(?P<strategy>[a-zA-Z0-9_-]+).*target=(?P<target>[a-zA-Z0-9_-]+).*Group:(?P<group>[a-zA-Z0-9]+).*Job:(?P<job>[a-zA-Z0-9_-]+).*Namespace:(?P<namespace>[a-zA-Z0-9_-]+)'
-      - labels:
-          policy_id:
-          source:
-          strategy:
-          target:
-          group:
-          job:
-          namespace:
-EOH
-
-        destination = "local/promtail.yaml"
-      }
-
-      resources {
-        cpu    = 50
-        memory = 32
-      }
-
-      service {
-        name     = "promtail"
-        provider = "nomad"
-        port     = "promtail"
       }
     }
   }
