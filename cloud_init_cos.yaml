@@ -1,0 +1,89 @@
+#cloud-config
+
+users:
+  - name: nomad
+    groups: docker
+
+write_files:
+  - path: /var/nomad/nomad.hcl
+    permissions: "0644"
+    owner: nomad
+    content: |
+      region     = "global"
+      datacenter = "${nomad_datacenter}"
+      data_dir   = "/var/lib/nomad"
+
+      leave_on_interrupt = true
+      leave_on_terminate = true
+
+      server {
+        enabled          = ${nomad_server ? true : false}
+        bootstrap_expect = ${nomad_server_count}
+
+        server_join {
+          retry_join = ["provider=gce project_name=${gcp_project} tag_value=${nomad_server_tag}"]
+        }
+      }
+
+      autopilot {
+        cleanup_dead_servers      = true
+        last_contact_threshold    = "200ms"
+        max_trailing_logs         = 250
+        server_stabilization_time = "5s"
+      }
+
+      client {
+        enabled = ${nomad_client ? true : false}
+
+        server_join {
+          retry_join = ["provider=gce project_name=${gcp_project} tag_value=${nomad_server_tag}"]
+        }
+      }
+
+      ui {
+        enabled = true
+      }
+
+      telemetry {
+        publish_allocation_metrics = true
+        publish_node_metrics       = true
+        prometheus_metrics         = true
+      }
+
+  - path: /etc/systemd/system/nomad.service
+    permissions: "0644"
+    owner: root
+    content: |
+      [Unit]
+      Description=Nomad
+
+      [Service]
+      Type=simple
+
+      User=nomad
+      Group=docker
+
+      ExecStart=/usr/bin/docker run \
+        --init \
+        --rm \
+        --publish 4646:4646 \
+        --publish 4647:4647 \
+        --publish 4648:4648 \
+        --volume /var/run/docker.sock:/var/run/docker.sock \
+        --volume /etc/ssl/certs:/etc/ssl/certs \
+        --mount type=bind,source=/var/nomad/nomad.hcl,target=/etc/nomad.d/nomad.hcl,readonly \
+        hashicorp/nomad:${nomad_version} \
+        agent -config /etc/nomad.d/
+
+      ExecStop=/usr/bin/docker stop nomad
+
+      Restart=always
+      SuccessExitStatus=0 SIGTERM
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - systemctl daemon-reload
+  - systemctl enable nomad.service
+  - systemctl start nomad.service
