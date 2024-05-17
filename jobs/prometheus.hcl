@@ -5,8 +5,10 @@ job "prometheus" {
     count = 1
 
     network {
+      mode = "bridge"
+
       port "prometheus_ui" {
-        static = 9090
+        to = 9090
       }
     }
 
@@ -33,7 +35,6 @@ global:
   evaluation_interval: 5s
 
 scrape_configs:
-
   - job_name: 'nomad_metrics'
 
     scrape_interval: 5s
