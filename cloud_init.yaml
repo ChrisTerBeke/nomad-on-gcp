@@ -54,6 +54,11 @@ write_files:
         prometheus_metrics         = true
       }
 
+      consul {
+        server_auto_join = false
+        client_auto_join = false
+      }
+
   - path: /etc/systemd/system/nomad.service
     permissions: 0o655
     content: |
