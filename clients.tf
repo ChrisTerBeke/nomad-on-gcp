@@ -81,8 +81,8 @@ resource "google_compute_region_instance_group_manager" "nomad_clients" {
   }
 }
 
-resource "google_compute_region_autoscaler" "nomad_clients" {
-  name    = "nomad-clients-autoscaler"
+resource "google_compute_region_autoscaler" "nomad_clients_cpu_utilization" {
+  name    = "nomad-clients-cpu-utilization"
   project = var.project
   region  = var.region
   target  = google_compute_region_instance_group_manager.nomad_clients.id
@@ -94,6 +94,42 @@ resource "google_compute_region_autoscaler" "nomad_clients" {
 
     cpu_utilization {
       target = 0.75
+    }
+  }
+}
+
+resource "google_compute_region_autoscaler" "nomad_clients_cpu_allocation" {
+  name    = "nomad-clients-cpu-allocation"
+  project = var.project
+  region  = var.region
+  target  = google_compute_region_instance_group_manager.nomad_clients.id
+
+  autoscaling_policy {
+    max_replicas    = var.nomad_max_client_count
+    min_replicas    = var.nomad_client_count
+    cooldown_period = 120
+
+    metric {
+      name   = "prometheus.googleapis.com/nomad_client_allocated_cpu/gauge"
+      target = var.nomad_max_client_count * 2000 * 0.75 # 2000m per client, 75% utilization
+    }
+  }
+}
+
+resource "google_compute_region_autoscaler" "nomad_clients_memory_allocation" {
+  name    = "nomad-clients-memory-allocation"
+  project = var.project
+  region  = var.region
+  target  = google_compute_region_instance_group_manager.nomad_clients.id
+
+  autoscaling_policy {
+    max_replicas    = var.nomad_max_client_count
+    min_replicas    = var.nomad_client_count
+    cooldown_period = 120
+
+    metric {
+      name   = "prometheus.googleapis.com/nomad_client_allocated_memory/gauge"
+      target = var.nomad_max_client_count * 3661 * 0.75 # 3661Mi per client, 75% utilization
     }
   }
 }
