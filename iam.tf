@@ -9,3 +9,16 @@ resource "google_project_iam_member" "nomad_compute_viewer" {
   role    = "roles/compute.viewer"
   member  = "serviceAccount:${google_service_account.nomad.email}"
 }
+
+# Allow nomad to read/write GCE disks
+resource "google_project_iam_member" "nomad_compute_instance_admin_v1" {
+  project = var.project
+  role    = "roles/compute.instanceAdmin.v1"
+  member  = "serviceAccount:${google_service_account.nomad.email}"
+}
+
+resource "google_project_iam_member" "nomad_compute_service_account_user" {
+  project = var.project
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.nomad.email}"
+}
