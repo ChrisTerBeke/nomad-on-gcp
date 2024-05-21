@@ -99,15 +99,17 @@ resource "google_compute_region_autoscaler" "nomad_clients" {
     metric {
       filter = "resource.type = \"prometheus_target\" AND resource.labels.project_id = \"${var.project}\""
       name   = "prometheus.googleapis.com/nomad_client_allocated_cpu/gauge"
-      target = var.nomad_max_client_count * 2000 * 0.75 # 2000m per client, 75% utilization
-      type   = "GAUGE"
+      # target = var.nomad_client_count * 2000 * 0.75 # 2000m per client, 75% utilization
+      type                       = "GAUGE"
+      single_instance_assignment = 2000 * 0.75
     }
 
     metric {
       filter = "resource.type = \"prometheus_target\" AND resource.labels.project_id = \"${var.project}\""
       name   = "prometheus.googleapis.com/nomad_client_allocated_memory/gauge"
-      target = var.nomad_max_client_count * 3661 * 0.75 # 3661Mi per client, 75% utilization
-      type   = "GAUGE"
+      # target = var.nomad_client_count * 3661 * 0.75 # 3661Mi per client, 75% utilization
+      type                       = "GAUGE"
+      single_instance_assignment = 3661 * 0.75
     }
   }
 }
