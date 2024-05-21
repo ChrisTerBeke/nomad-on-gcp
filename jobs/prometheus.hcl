@@ -35,25 +35,19 @@ global:
 
 scrape_configs:
   - job_name: 'nomad'
-    scrape_interval: '5s'
-    static_configs:
-    - targets: ['{{env "attr.unique.hostname"}}:4646']
     metrics_path: '/v1/metrics'
     params:
       format: ['prometheus']
-
-  - job_name: 'prometheus'
     static_configs:
-    - targets: ['127.0.0.1:9090']
-    metrics_path: '/prometheus/metrics'
+    - targets: ['{{env "attr.unique.hostname"}}:4646']
 EOH
       }
 
       driver = "docker"
 
       config {
-        image   = "prom/prometheus:latest"
-        ports   = ["prometheus"]
+        image = "prom/prometheus:latest"
+        ports = ["prometheus"]
         args = [
           "--config.file=/etc/prometheus/prometheus.yml",
           "--web.external-url=/prometheus",
