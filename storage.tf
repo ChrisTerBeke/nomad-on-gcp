@@ -4,5 +4,5 @@ resource "google_compute_region_disk" "nomad_1" {
   region        = var.region
   type          = "pd-ssd"
   size          = 200
-  replica_zones = ["europe-west4-a", "europe-west4-b", "europe-west4-c"]
+  replica_zones = ["europe-west4-a", "europe-west4-b"]
 }
