@@ -112,6 +112,7 @@ resource "google_compute_region_autoscaler" "nomad_clients_cpu_allocation" {
     metric {
       name   = "prometheus.googleapis.com/nomad_client_allocated_cpu/gauge"
       target = var.nomad_max_client_count * 2000 * 0.75 # 2000m per client, 75% utilization
+      type   = "GAUGE"
     }
   }
 }
@@ -130,6 +131,7 @@ resource "google_compute_region_autoscaler" "nomad_clients_memory_allocation" {
     metric {
       name   = "prometheus.googleapis.com/nomad_client_allocated_memory/gauge"
       target = var.nomad_max_client_count * 3661 * 0.75 # 3661Mi per client, 75% utilization
+      type   = "GAUGE"
     }
   }
 }
