@@ -1,13 +1,13 @@
 job "prometheus" {
   datacenters = ["gcp-eu"]
 
-  group "monitoring" {
+  group "prometheus" {
     count = 1
 
     network {
       mode = "bridge"
 
-      port "prometheus_ui" {
+      port "prometheus" {
         to = 9090
       }
     }
@@ -29,50 +29,49 @@ job "prometheus" {
         destination = "local/prometheus.yml"
 
         data = <<EOH
----
 global:
-  scrape_interval:     5s
-  evaluation_interval: 5s
+  scrape_interval:     '5s'
+  evaluation_interval: '5s'
 
 scrape_configs:
-  - job_name: 'nomad_metrics'
-
-    scrape_interval: 5s
-    metrics_path: /v1/metrics
+  - job_name: 'nomad'
+    scrape_interval: '5s'
+    static_configs:
+    - targets: ['{{env "attr.unique.hostname"}}:4646']
+    metrics_path: '/v1/metrics'
     params:
       format: ['prometheus']
+
+  - job_name: 'prometheus'
+    static_configs:
+    - targets: ['127.0.0.1:9090']
+    metrics_path: '/prometheus/metrics'
 EOH
       }
 
       driver = "docker"
 
       config {
-        image = "prom/prometheus:latest"
-
+        image   = "prom/prometheus:latest"
+        ports   = ["prometheus"]
+        args = [
+          "--config.file=/etc/prometheus/prometheus.yml",
+          "--web.external-url=/prometheus",
+        ]
         volumes = [
           "local/prometheus.yml:/etc/prometheus/prometheus.yml",
         ]
-
-        ports = ["prometheus_ui"]
       }
 
       service {
-        name     = "prometheus"
         provider = "nomad"
-        port     = "prometheus_ui"
+        name     = "prometheus"
+        port     = "prometheus"
 
         tags = [
           "traefik.enable=true",
-           "traefik.http.routers.prometheus.rule=Path(`/prometheus`)",
+          "traefik.http.routers.prometheus.rule=PathPrefix(`/prometheus`)",
         ]
-
-        check {
-          name     = "prometheus_ui port alive"
-          type     = "http"
-          path     = "/-/healthy"
-          interval = "10s"
-          timeout  = "2s"
-        }
       }
     }
   }
