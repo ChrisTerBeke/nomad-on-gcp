@@ -12,3 +12,9 @@ resource "google_storage_bucket" "nomad_1" {
   project  = var.project
   location = var.region
 }
+
+resource "google_storage_bucket_object" "nomad_1" {
+  name    = "index.html"
+  bucket  = google_storage_bucket.nomad_1.name
+  content = "hello world!"
+}
