@@ -22,3 +22,10 @@ resource "google_project_iam_member" "nomad_compute_service_account_user" {
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.nomad.email}"
 }
+
+# Allow nomad to read/write GCS buckets
+resource "google_project_iam_member" "nomad_storage_admin" {
+  project = var.project
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${google_service_account.nomad.email}"
+}
