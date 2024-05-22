@@ -1,8 +1,8 @@
 job "static-site" {
   datacenters = ["gcp-eu"]
 
-  group "example" {
-    count = 1
+  group "storage" {
+    count = 3
 
     network {
       mode = "bridge"
@@ -29,7 +29,7 @@ job "static-site" {
       type            = "csi"
       read_only       = false
       source          = "fuse-1"
-      access_mode     = "single-node-writer"
+      access_mode     = "multi-node-multi-writer"
       attachment_mode = "file-system"
     }
 
