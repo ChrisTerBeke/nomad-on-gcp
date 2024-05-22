@@ -26,7 +26,7 @@ job "example-with-storage" {
     volume "store" {
       type            = "csi"
       read_only       = false
-      source          = "fuse-1"
+      source          = "csi-1"
       access_mode     = "single-node-writer"
       attachment_mode = "file-system"
     }
@@ -61,7 +61,7 @@ job "example-with-storage" {
           "-listen",
           ":${NOMAD_PORT_http}",
           "-text",
-          "hello world from CSI storage Node: ${node.unique.id}, Alloc: ${NOMAD_ALLOC_ID}",
+          "hello world from storage Node: ${node.unique.id}, Alloc: ${NOMAD_ALLOC_ID}",
         ]
       }
     }
