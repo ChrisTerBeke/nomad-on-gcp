@@ -25,27 +25,25 @@ job "static-site" {
       ]
     }
 
-    volume "static" {
-      type            = "csi"
-      read_only       = false
-      source          = "fuse-1"
-      access_mode     = "multi-node-multi-writer"
-      attachment_mode = "file-system"
-    }
-
     task "server" {
       driver = "docker"
 
       volume_mount {
         volume      = "static"
         destination = "/static"
-        read_only   = false
       }
 
       config {
         image = "flashspys/nginx-static"
         ports = ["http"]
       }
+    }
+    
+    volume "static" {
+      type            = "csi"
+      source          = "fuse-1"
+      access_mode     = "multi-node-multi-writer"
+      attachment_mode = "file-system"
     }
   }
 }
