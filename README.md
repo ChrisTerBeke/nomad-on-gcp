@@ -6,6 +6,10 @@ A reference implementation of HashiCorp Nomad on Google Cloud Platform.
 
 This implementation uses the following technologies:
 
+- HashiCorp Terraform for provisioning infrastructure
+- HashiCorp Nomad for workload orchestration
+- VPC networking with private IP addresses for all Nomad nodes
+- Cloud Firewall to restrict access to and from Nomad nodes
 - Managed Instance Group (MIG) for Nomad servers and clients with auto-healing using HTTP health checks
 - Compute Engine Persistent Disks for persistent volumes (via CSI GCE PD)
 - Cloud Storage for perstistent volumes (via CSI Fuse)
