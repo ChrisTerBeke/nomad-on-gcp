@@ -3,6 +3,7 @@ plugin_id = "fuse"
 id        = "fuse-dyn"
 name      = "fuse-dyn"
 
+# https://github.com/ofek/csi-gcs/blob/master/pkg/flags/flags.go#L31
 parameters {
   "gcs.csi.ofek.dev/bucket"     = "summer-sun-394510-nomad-dyn"
   "gcs.csi.ofek.dev/project-id" = "summer-sun-394510"
