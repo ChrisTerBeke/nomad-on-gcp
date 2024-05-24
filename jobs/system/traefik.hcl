@@ -33,6 +33,8 @@ job "traefik" {
       tags = [
         "traefik.enable=true",
         "traefik.http.routers.traefik.rule=Host(`traefik.christerbeke.com`)",
+        "traefik.http.middlewares.traefik.basicauth.users=admin:$2a$13$368u26kV29bL8W7ei/3g1ui1o7ERzo4WMw.A96EQ7z2KczXrWD6.S",
+        "traefik.http.routers.traefik.middlewares=traefik",
       ]
     }
 
@@ -48,7 +50,8 @@ job "traefik" {
           "--entrypoints.web.address=:${NOMAD_PORT_http}",
           "--entrypoints.traefik.address=:${NOMAD_PORT_dashboard}",
           "--providers.nomad=true",
-          "--providers.nomad.endpoint.address=http://${NOMAD_IP_http}:4646"
+          "--providers.nomad.endpoint.address=http://${NOMAD_IP_http}:4646",
+          "--providers.nomad.exposedByDefault=false",
         ]
       }
     }
