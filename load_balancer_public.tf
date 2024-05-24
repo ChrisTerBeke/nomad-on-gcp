@@ -44,7 +44,10 @@ resource "google_compute_managed_ssl_certificate" "nomad_public" {
   project = var.project
 
   managed {
-    domains = ["public.christerbeke.com"]
+    domains = [
+      "public.christerbeke.com",
+      "traefik.christerbeke.com",
+    ]
   }
 }
 
