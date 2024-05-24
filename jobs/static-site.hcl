@@ -19,9 +19,9 @@ job "static-site" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.http.rule=PathPrefix(`/storage`)",
-        "traefik.http.middlewares.stripprefix.stripprefix.prefixes=/storage",
-        "traefik.http.routers.http.middlewares=stripprefix",
+        "traefik.http.routers.static.rule=PathPrefix(`/static`)",
+        "traefik.http.middlewares.static.stripprefix.prefixes=/static",
+        "traefik.http.routers.static.middlewares=static",
       ]
     }
 
@@ -38,7 +38,7 @@ job "static-site" {
         ports = ["http"]
       }
     }
-    
+
     volume "static" {
       type            = "csi"
       source          = "fuse-1"

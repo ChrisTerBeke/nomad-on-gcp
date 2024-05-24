@@ -4,14 +4,6 @@ job "telemetry" {
 
   group "telemetry" {
 
-    network {
-      mode = "bridge"
-
-      port "telemetry" {
-        to = 4317
-      }
-    }
-
     restart {
       attempts = 2
       interval = "30m"
@@ -23,7 +15,7 @@ job "telemetry" {
       size = 300
     }
 
-    task "telemetry" {      
+    task "telemetry" {
       template {
         change_mode = "noop"
         destination = "local/config.yml"
@@ -64,25 +56,13 @@ service:
       exporters: [googlemanagedprometheus]
 EOH
       }
-      
+
       driver = "docker"
 
       config {
         image = "otel/opentelemetry-collector-contrib:0.100.0"
-        ports = ["telemetry"]
         volumes = [
           "local/config.yml:/etc/otelcol-contrib/config.yaml",
-        ]
-      }
-
-      service {
-        provider = "nomad"
-        name     = "telemetry"
-        port     = "telemetry"
-
-        tags = [
-          "traefik.enable=true",
-          "traefik.http.routers.telemetry.rule=PathPrefix(`/telemetry`)",
         ]
       }
     }
