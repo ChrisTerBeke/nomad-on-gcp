@@ -46,16 +46,29 @@ resource "google_compute_managed_ssl_certificate" "nomad_public" {
   managed {
     domains = [
       "public.christerbeke.com",
+    ]
+  }
+}
+
+resource "google_compute_managed_ssl_certificate" "nomad_traefik" {
+  name    = "traefik-christerbeke-com"
+  project = var.project
+
+  managed {
+    domains = [
       "traefik.christerbeke.com",
     ]
   }
 }
 
 resource "google_compute_target_https_proxy" "nomad_public" {
-  name             = "nomad-public"
-  project          = var.project
-  url_map          = google_compute_url_map.nomad_public.id
-  ssl_certificates = [google_compute_managed_ssl_certificate.nomad_public.id]
+  name    = "nomad-public"
+  project = var.project
+  url_map = google_compute_url_map.nomad_public.id
+  ssl_certificates = [
+    google_compute_managed_ssl_certificate.nomad_public.id,
+    google_compute_managed_ssl_certificate.nomad_traefik.id,
+  ]
 }
 
 resource "google_compute_global_forwarding_rule" "nomad_public" {
