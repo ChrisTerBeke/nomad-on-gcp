@@ -12,7 +12,7 @@ This implementation uses the following technologies:
 - Cloud Firewall to restrict access to and from Nomad nodes
 - Managed Instance Group (MIG) for Nomad servers and clients with auto-healing using HTTP health checks
 - Compute Engine Persistent Disks for persistent volumes (via CSI GCE PD)
-- Cloud Storage for perstistent volumes (via CSI Fuse)
+- Cloud Storage for persistent volumes (via CSI Fuse)
 - A Global Load Balancer with Identity-Aware Proxy (IAP) to access the Nomad UI
 - A Global Load Balancer to access workload services
 - Cloud Init to provision Nomad and plugins like CNI
