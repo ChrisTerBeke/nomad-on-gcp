@@ -2,7 +2,7 @@ resource "google_compute_global_address" "nomad_ui" {
   name    = "nomad-ui"
   project = var.project
 }
-a`
+
 resource "google_compute_health_check" "nomad_ui" {
   name                = "nomad-ui"
   project             = var.project
