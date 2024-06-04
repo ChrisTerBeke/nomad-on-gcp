@@ -61,6 +61,17 @@ resource "google_compute_managed_ssl_certificate" "nomad_traefik" {
   }
 }
 
+resource "google_compute_managed_ssl_certificate" "nomad_uptime" {
+  name    = "uptime-christerbeke-com"
+  project = var.project
+
+  managed {
+    domains = [
+      "uptime.christerbeke.com",
+    ]
+  }
+}
+
 resource "google_compute_target_https_proxy" "nomad_public" {
   name    = "nomad-public"
   project = var.project
@@ -68,6 +79,7 @@ resource "google_compute_target_https_proxy" "nomad_public" {
   ssl_certificates = [
     google_compute_managed_ssl_certificate.nomad_public.id,
     google_compute_managed_ssl_certificate.nomad_traefik.id,
+    google_compute_managed_ssl_certificate.nomad_uptime.id,
   ]
 }
 
