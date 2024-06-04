@@ -24,7 +24,7 @@ variable "machine_type" {
 variable "nomad_version" {
   type        = string
   description = "Nomad version to use for the server and client nodes"
-  default     = "1.7.7"
+  default     = "1.8.0"
 }
 
 variable "nomad_datacenter" {
